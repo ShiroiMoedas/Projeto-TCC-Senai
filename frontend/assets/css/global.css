@@ -47,7 +47,7 @@ body {
 }
 
 .logo-industria {
-    width: 120px;
+    width: 300px;
     margin-bottom: 20px;
 }
 
@@ -138,6 +138,10 @@ body {
 /* Modais e Utilitários */
 .hidden { display: none; }
 
+.modal-recovery.hidden {
+    display: none;
+}
+
 .modal-recovery {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
@@ -152,4 +156,95 @@ body {
     padding: 30px;
     border-radius: 8px;
     width: 400px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+}
+
+.close-modal, .close-modal-cadastro {
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    color: #aaa;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.close-modal:hover, .close-modal-cadastro:hover {
+    color: var(--primary-color);
+}
+
+.modal-content h3 {
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.modal-content p {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+}
+
+.btn-recovery {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--secondary-color);
+    color: var(--white);
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+    margin-top: 10px;
+}
+
+.btn-recovery:hover {
+    background-color: var(--primary-color);
+}
+
+/* Link de Cadastro */
+.cadastro-link {
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.cadastro-link p {
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.cadastro-link a {
+    color: var(--secondary-color);
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s;
+}
+
+.cadastro-link a:hover {
+    color: var(--primary-color);
+}
+
+.cadastro-voltar {
+    text-align: center;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.cadastro-voltar p {
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.cadastro-voltar a {
+    color: var(--secondary-color);
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s;
+}
+
+.cadastro-voltar a:hover {
+    color: var(--primary-color);
 }
