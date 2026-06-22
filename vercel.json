@@ -9,23 +9,23 @@
   "rewrites": [
     {
       "source": "/backend/index.php",
-      "dest": "/backend/index.php"
+      "destination": "/backend/index.php"
     },
     {
       "source": "/assets/(.*)",
-      "dest": "/frontend/assets/$1"
+      "destination": "/frontend/assets/$1"
     },
     {
       "source": "/dashboard/(.*)",
-      "dest": "/frontend/dashboard/$1"
+      "destination": "/frontend/dashboard/$1"
     },
     {
       "source": "/quiz/(.*)",
-      "dest": "/frontend/quiz/$1"
+      "destination": "/frontend/quiz/$1"
     },
     {
       "source": "/",
-      "dest": "/frontend/index.html"
+      "destination": "/frontend/index.html"
     }
   ]
 }
