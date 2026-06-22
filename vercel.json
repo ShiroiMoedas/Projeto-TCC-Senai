@@ -1,16 +1,6 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "backend/index.php",
-      "use": "@vercel/php"
-    }
-  ],
   "rewrites": [
-    {
-      "source": "/backend/index.php",
-      "destination": "/backend/index.php"
-    },
     {
       "source": "/assets/(.*)",
       "destination": "/frontend/assets/$1"
