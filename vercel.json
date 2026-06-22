@@ -8,24 +8,24 @@
   ],
   "rewrites": [
     {
-      "src": "/backend/index.php",
-      "dest": "/backend/index.php"
+      "source": "/backend/index.php",
+      "destination": "/backend/index.php"
     },
     {
-      "src": "/assets/(.*)",
-      "dest": "/frontend/assets/$1"
+      "source": "/assets/(.*)",
+      "destination": "/frontend/assets/$1"
     },
     {
-      "src": "/dashboard/(.*)",
-      "dest": "/frontend/dashboard/$1"
+      "source": "/dashboard/(.*)",
+      "destination": "/frontend/dashboard/$1"
     },
     {
-      "src": "/quiz/(.*)",
-      "dest": "/frontend/quiz/$1"
+      "source": "/quiz/(.*)",
+      "destination": "/frontend/quiz/$1"
     },
     {
-      "src": "/",
-      "dest": "/frontend/index.html"
+      "source": "/",
+      "destination": "/frontend/index.html"
     }
   ]
 }
