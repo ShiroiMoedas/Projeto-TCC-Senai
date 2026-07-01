@@ -82,6 +82,15 @@ body {
     font-size: 0.9rem;
 }
 
+.login-notice {
+    color: var(--text-light);
+    font-size: 0.82rem;
+    line-height: 1.5;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+}
+
 /* Formulário e Inputs */
 .input-group {
     margin-bottom: 20px;
@@ -153,12 +162,62 @@ body {
 
 .modal-content {
     background: var(--white);
-    padding: 30px;
-    border-radius: 8px;
-    width: 400px;
+    padding: 26px 28px 24px;
+    border-radius: 18px;
+    width: min(100%, 440px);
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    box-shadow: 0 22px 60px rgba(15, 23, 42, 0.18);
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 22px;
+}
+
+.modal-avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(59, 130, 246, 0.14);
+    color: var(--primary-color);
+    font-size: 1.4rem;
+}
+
+.modal-title-group h3 {
+    margin: 0;
+    font-size: 1.3rem;
+}
+
+.modal-title-group p {
+    margin: 4px 0 0;
+    color: var(--text-light);
+    font-size: 0.94rem;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.btn-secondary {
+    background: #f1f5f9;
+    color: var(--text-dark);
+    border: 1px solid #cbd5e1;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 700;
+}
+
+.btn-secondary:hover {
+    background: #e2e8f0;
 }
 
 .close-modal, .close-modal-cadastro {
@@ -247,4 +306,27 @@ body {
 
 .cadastro-voltar a:hover {
     color: var(--primary-color);
+}
+
+@media (max-width: 760px) {
+    body {
+        height: auto;
+        min-height: 100vh;
+        padding: 20px;
+    }
+
+    .login-container {
+        width: 100%;
+        height: auto;
+        flex-direction: column;
+    }
+
+    .login-branding,
+    .login-box {
+        padding: 32px 24px;
+    }
+
+    .logo-industria {
+        width: min(260px, 80%);
+    }
 }

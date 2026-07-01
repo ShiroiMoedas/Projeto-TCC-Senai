@@ -6,7 +6,6 @@
     <title>MAPA - Quiz Vocacional</title>
     <link rel="stylesheet" href="../assets/css/global.css">
     <link rel="stylesheet" href="../assets/css/quiz.css">
-    <!-- Bibliotecas externas para o gráfico de radar e exportação de PDF -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
@@ -49,15 +48,13 @@
         <section id="areaConcluido" class="quiz-card hidden">
             <h2>Quiz concluído!</h2>
             <p id="mensagemConcluido">Suas respostas foram enviadas ao servidor.</p>
-            
+
             <div id="resumoNotas" class="resumo-notas"></div>
 
-            <!-- Contêiner do gráfico de radar/teia de aranha -->
             <div class="grafico-wrapper">
                 <canvas id="graficoRadar"></canvas>
             </div>
 
-            <!-- Ações finais de download do certificado e retorno ao login -->
             <div class="acoes-concluido">
                 <button type="button" id="btnDownloadCertificado" class="btn-salvar">Baixar Certificado de Perfil</button>
                 <button type="button" id="btnVoltarLogin" class="btn-primario">Voltar ao login</button>

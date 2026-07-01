@@ -8,138 +8,45 @@
 </head>
 <body>
 
-    <!-- Container principal do login -->
     <div class="login-container">
-        
-        <!-- Seção esquerda: Branding e apresentação da empresa -->
         <div class="login-branding">
             <div class="branding-content">
                 <img src="assets/images/logo-parex.png" alt="PAREX S.A. Logo" class="logo-industria">
                 <h1>Mapeamento de Competências</h1>
-                <p>Transformando o capital humano em dados estratégicos para a Indústria Metalmecânica.</p>
+                <p>Transformando o capital humano em dados estratégicos para a indústria metalmecânica.</p>
             </div>
         </div>
 
-        <!-- Seção direita: Formulário de Login -->
         <div class="login-box">
-            <h2>Logar no Sistema</h2>
-            <p class="subtitle">Insira as suas credenciais para continuar</p>
+            <h2>Entrar no Sistema</h2>
+            <p class="subtitle">Acesso exclusivo para usuários cadastrados.</p>
 
-            <!-- Formulário de autenticação -->
             <form id="formLogin" action="#" method="POST">
-                
-                <!-- Seletor de perfil: Colaborador ou Gestor -->
                 <div class="input-group">
                     <label for="perfil">Perfil de Acesso</label>
                     <select id="perfil" name="perfil" required>
                         <option value="" disabled selected>Selecione o seu perfil...</option>
-                        <option value="colaborador">Colaborador (Quiz & Perfil)</option>
-                        <option value="gestor">Gestor de RH (Painel Estratégico)</option>
+                        <option value="admin">Administrador de T.I.</option>
+                        <option value="gestor">Gestor de RH</option>
+                        <option value="colaborador">Colaborador</option>
                     </select>
                 </div>
 
-                <!-- Campo de entrada do e-mail corporativo -->
                 <div class="input-group">
                     <label for="email">E-mail Corporativo</label>
                     <input type="email" id="email" name="email" placeholder="exemplo@parex.com.br" required autocomplete="username">
                 </div>
 
-                <!-- Campo de palavra-passe com link de recuperação -->
                 <div class="input-group">
-                    <div class="label-row">
-                        <label for="password">Palavra-passe</label>
-                        <!-- Link para abrir modal de recuperação de acesso -->
-                        <a href="#" id="btnEsqueceu" class="forgot-link">Esqueceu-se da senha?</a>
-                    </div>
-                    <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" name="password" placeholder="Digite sua senha" required autocomplete="current-password">
                 </div>
 
-                <!-- Botão de submissão do login -->
                 <button type="submit" class="btn-login">Entrar no Portal</button>
             </form>
-
-            <!-- Link para criar nova conta -->
-            <div class="cadastro-link">
-                <p>Não tem conta? <a href="#" id="btnCriarConta">Criar nova conta</a></p>
-            </div>
         </div>
     </div>
 
-    <!-- Modal de Recuperação de Acesso (inicialmente oculto) -->
-    <div id="modalRecuperacao" class="modal-recovery hidden">
-        <div class="modal-content">
-            <!-- Botão para fechar o modal -->
-            <span class="close-modal">&times;</span>
-            <h3>Recuperar Acesso</h3>
-            <p>Insira o seu e-mail corporativo cadastrado. Enviaremos um link para redefinir a sua palavra-passe.</p>
-            
-            <!-- Formulário para solicitar recuperação de senha -->
-            <form id="formRecuperacao">
-                <div class="input-group">
-                    <label for="emailRecupera">E-mail Corporativo</label>
-                    <input type="email" id="emailRecupera" required placeholder="exemplo@parex.com.br">
-                </div>
-                <button type="submit" class="btn-recovery">Enviar Instruções</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal de Cadastro de Nova Conta (inicialmente oculto) -->
-    <div id="modalCadastro" class="modal-recovery hidden">
-        <div class="modal-content">
-            <!-- Botão para fechar o modal -->
-            <span class="close-modal-cadastro">&times;</span>
-            <h3>Criar Nova Conta</h3>
-            <p>Preencha os dados abaixo para se registrar no sistema MAPA</p>
-            
-            <!-- Formulário de cadastro de novo usuário -->
-            <form id="formCadastro">
-                <!-- Campo de nome completo -->
-                <div class="input-group">
-                    <label for="nomeCompleto">Nome Completo</label>
-                    <input type="text" id="nomeCompleto" required placeholder="João da Silva">
-                </div>
-
-                <!-- Campo de e-mail corporativo -->
-                <div class="input-group">
-                    <label for="emailCadastro">E-mail Corporativo</label>
-                    <input type="email" id="emailCadastro" required placeholder="joao.silva@parex.com.br">
-                </div>
-
-                <!-- Seletor de perfil na criação de conta -->
-                <div class="input-group">
-                    <label for="perfilCadastro">Perfil de Acesso</label>
-                    <select id="perfilCadastro" required>
-                        <option value="" disabled selected>Selecione o seu perfil...</option>
-                        <option value="colaborador">Colaborador</option>
-                        <option value="gestor">Gestor de RH</option>
-                    </select>
-                </div>
-
-                <!-- Campo de palavra-passe (mínimo 6 caracteres) -->
-                <div class="input-group">
-                    <label for="senhaCadastro">Palavra-passe</label>
-                    <input type="password" id="senhaCadastro" required placeholder="••••••••" minlength="6">
-                </div>
-
-                <!-- Campo de confirmação de palavra-passe -->
-                <div class="input-group">
-                    <label for="senhaConfirm">Confirmar Palavra-passe</label>
-                    <input type="password" id="senhaConfirm" required placeholder="••••••••" minlength="6">
-                </div>
-
-                <!-- Botão de submissão do cadastro -->
-                <button type="submit" class="btn-recovery">Criar Conta</button>
-            </form>
-
-            <!-- Link para voltar ao login -->
-            <div class="cadastro-voltar">
-                <p>Já tem conta? <a href="#" id="btnVoltarLogin">Voltar ao login</a></p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Carrega o script de lógica do login (manipulação de eventos, validações e requisições) -->
     <script src="assets/js/login.js"></script>
 </body>
 </html>

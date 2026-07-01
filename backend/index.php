@@ -32,7 +32,23 @@ switch ($acao) {
         break;
 
     case 'cadastro':
-        criarUsuario($db, $dados);
+        echo json_encode(["sucesso" => false, "mensagem" => "Cadastro aberto desativado. Procure o Administrador de T.I."]);
+        break;
+
+    case 'listar_usuarios':
+        listarUsuariosAdmin($db, $dados);
+        break;
+
+    case 'salvar_usuario_admin':
+        salvarUsuarioAdmin($db, $dados);
+        break;
+
+    case 'excluir_usuario_admin':
+        excluirUsuarioAdmin($db, $dados);
+        break;
+
+    case 'alterar_senha_admin':
+        alterarSenhaAdmin($db, $dados);
         break;
 
     case 'carregar_quiz':

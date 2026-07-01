@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * MAPA - Funções do quiz vocacional (login, salvar, carregar, finalizar)
  */
@@ -13,11 +13,16 @@ function processarLogin(PDO $db, array $dados): void
     $senha = $dados['password'] ?? '';
     $perfil = $dados['perfil'] ?? '';
 
-    $stmt = $db->prepare('SELECT id, nome, email, senha, perfil FROM usuarios WHERE email = :email AND perfil = :perfil');
+    if (!in_array($perfil, ['admin', 'gestor', 'colaborador'], true)) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Perfil inválido.']);
+        return;
+    }
+
+    $stmt = $db->prepare('SELECT id, nome, email, senha_hash, perfil FROM usuarios WHERE email = :email AND perfil = :perfil');
     $stmt->execute(['email' => $email, 'perfil' => $perfil]);
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$usuario || !password_verify($senha, $usuario['senha'])) {
+    if (!$usuario || !password_verify($senha, $usuario['senha_hash'])) {
         echo json_encode(['sucesso' => false, 'mensagem' => 'E-mail, senha ou perfil incorretos.']);
         return;
     }
@@ -100,6 +105,8 @@ function salvarQuiz(PDO $db, array $dados): void
 
 function atualizarEsquemaSQLite(PDO $db): void
 {
+    atualizarTabelaUsuariosSQLite($db);
+
     $colunas = [];
     $stmt = $db->query('PRAGMA table_info(notas_quiz)');
     foreach ($stmt as $row) {
@@ -113,6 +120,88 @@ function atualizarEsquemaSQLite(PDO $db): void
     if (!in_array('indice_preditivo', $colunas, true)) {
         $db->exec('ALTER TABLE notas_quiz ADD COLUMN indice_preditivo REAL');
     }
+}
+
+function atualizarTabelaUsuariosSQLite(PDO $db): void
+{
+    $stmt = $db->query("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'usuarios'");
+    $tabelaExiste = (bool) $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$tabelaExiste) {
+        criarTabelaUsuariosAtualizada($db);
+        return;
+    }
+
+    $colunas = [];
+    $stmtColunas = $db->query('PRAGMA table_info(usuarios)');
+    foreach ($stmtColunas as $row) {
+        $colunas[] = $row['name'];
+    }
+
+    $sqlTabela = (string) $db
+        ->query("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'usuarios'")
+        ->fetchColumn();
+
+    $precisaMigrar = !in_array('senha_hash', $colunas, true) || !str_contains($sqlTabela, "'admin'");
+
+    if (!$precisaMigrar) {
+        return;
+    }
+
+    $db->beginTransaction();
+
+    try {
+        $db->exec('ALTER TABLE usuarios RENAME TO usuarios_antigo');
+        criarTabelaUsuariosAtualizada($db);
+
+        $campoSenhaOrigem = in_array('senha_hash', $colunas, true) ? 'senha_hash' : 'senha';
+        $db->exec("
+            INSERT INTO usuarios (id, nome, email, senha_hash, perfil)
+            SELECT id, nome, email, {$campoSenhaOrigem}, perfil
+            FROM usuarios_antigo
+            WHERE perfil IN ('admin', 'gestor', 'colaborador')
+        ");
+
+        $db->exec('DROP TABLE usuarios_antigo');
+        $db->commit();
+    } catch (Exception $e) {
+        $db->rollBack();
+        throw $e;
+    }
+}
+
+
+function garantirAdministradorPadrao(PDO $db): void
+{
+    $stmt = $db->query("SELECT COUNT(*) FROM usuarios WHERE perfil = 'admin'");
+    $totalAdmins = (int) $stmt->fetchColumn();
+
+    if ($totalAdmins > 0) {
+        return;
+    }
+
+    $stmtInsert = $db->prepare('
+        INSERT INTO usuarios (nome, email, senha_hash, perfil)
+        VALUES (:nome, :email, :senha_hash, :perfil)
+    ');
+
+    $stmtInsert->execute([
+        'nome' => 'Administrador T.I.',
+        'email' => 'admin@parex.com.br',
+        'senha_hash' => password_hash('123456', PASSWORD_DEFAULT),
+        'perfil' => 'admin',
+    ]);
+}function criarTabelaUsuariosAtualizada(PDO $db): void
+{
+    $db->exec("
+        CREATE TABLE IF NOT EXISTS usuarios (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            senha_hash TEXT NOT NULL,
+            perfil TEXT NOT NULL CHECK (perfil IN ('admin', 'gestor', 'colaborador'))
+        )
+    ");
 }
 
 function buscarUsuario(PDO $db, int $usuarioId): ?array
@@ -409,6 +498,236 @@ function obterDadosGestor(PDO $db, array $dados): void
  * Cria um novo usuário no banco de dados.
  * Valida e-mail único, cria hash da senha e insere o usuário na tabela.
  */
+function validarAdministrador(PDO $db, int $adminId): bool
+{
+    if ($adminId <= 0) {
+        return false;
+    }
+
+    $stmt = $db->prepare('SELECT perfil FROM usuarios WHERE id = :id');
+    $stmt->execute(['id' => $adminId]);
+    $admin = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    return $admin && $admin['perfil'] === 'admin';
+}
+
+function listarUsuariosAdmin(PDO $db, array $dados): void
+{
+    $adminId = (int) ($dados['admin_id'] ?? 0);
+
+    if (!validarAdministrador($db, $adminId)) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Acesso negado. Apenas administradores podem listar usuários.']);
+        return;
+    }
+
+    $stmt = $db->query("\n        SELECT id, nome, email, perfil\n        FROM usuarios\n        WHERE perfil IN ('gestor', 'colaborador')\n        ORDER BY nome ASC\n    ");
+
+    echo json_encode([
+        'sucesso' => true,
+        'usuarios' => $stmt->fetchAll(PDO::FETCH_ASSOC),
+    ]);
+}
+
+function salvarUsuarioAdmin(PDO $db, array $dados): void
+{
+    $adminId = (int) ($dados['admin_id'] ?? 0);
+
+    if (!validarAdministrador($db, $adminId)) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Acesso negado. Apenas administradores podem salvar usuários.']);
+        return;
+    }
+
+    $id = isset($dados['id']) ? (int) $dados['id'] : 0;
+    $nome = trim($dados['nome'] ?? '');
+    $email = trim($dados['email'] ?? '');
+    $perfil = trim($dados['perfil'] ?? '');
+    $senha = $dados['password'] ?? '';
+
+    if (!$nome || !$email || !$perfil) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Nome, e-mail e perfil são obrigatórios.']);
+        return;
+    }
+
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'E-mail inválido.']);
+        return;
+    }
+
+    if (!in_array($perfil, ['gestor', 'colaborador'], true)) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'O administrador só pode criar usuários Gestores de RH ou Colaboradores.']);
+        return;
+    }
+
+    if ($id <= 0 && strlen($senha) < 6) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'A senha inicial deve ter no mínimo 6 caracteres.']);
+        return;
+    }
+
+    if ($senha !== '' && strlen($senha) < 6) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'A nova senha deve ter no mínimo 6 caracteres.']);
+        return;
+    }
+
+    $stmtEmail = $db->prepare('SELECT id FROM usuarios WHERE email = :email AND id <> :id');
+    $stmtEmail->execute(['email' => $email, 'id' => $id]);
+    if ($stmtEmail->fetch(PDO::FETCH_ASSOC)) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Este e-mail já está cadastrado para outro usuário.']);
+        return;
+    }
+
+    if ($id > 0) {
+        if ($id === $adminId) {
+            echo json_encode(['sucesso' => false, 'mensagem' => 'Administradores não podem alterar seu próprio cadastro por aqui.']);
+            return;
+        }
+
+        atualizarUsuarioAdmin($db, $id, $nome, $email, $perfil, $senha, $adminId);
+        return;
+    }
+
+    $stmt = $db->prepare('
+        INSERT INTO usuarios (nome, email, perfil, senha_hash)
+        VALUES (:nome, :email, :perfil, :senha_hash)
+    ');
+
+    $stmt->execute([
+        'nome' => $nome,
+        'email' => $email,
+        'perfil' => $perfil,
+        'senha_hash' => password_hash($senha, PASSWORD_DEFAULT),
+    ]);
+
+    echo json_encode(['sucesso' => true, 'mensagem' => 'Usuário cadastrado com sucesso.']);
+}
+
+function atualizarUsuarioAdmin(PDO $db, int $id, string $nome, string $email, string $perfil, string $senha, int $adminId): void
+{
+    if ($id === $adminId) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Administradores não podem alterar seu próprio cadastro por aqui.']);
+        return;
+    }
+
+    $stmtAtual = $db->prepare("SELECT id FROM usuarios WHERE id = :id AND perfil IN ('gestor', 'colaborador')");
+    $stmtAtual->execute(['id' => $id]);
+
+    if (!$stmtAtual->fetch(PDO::FETCH_ASSOC)) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Usuário não encontrado ou protegido contra edição.']);
+        return;
+    }
+
+    if ($senha !== '') {
+        $stmt = $db->prepare('
+            UPDATE usuarios
+            SET nome = :nome, email = :email, perfil = :perfil, senha_hash = :senha_hash
+            WHERE id = :id
+        ');
+
+        $stmt->execute([
+            'id' => $id,
+            'nome' => $nome,
+            'email' => $email,
+            'perfil' => $perfil,
+            'senha_hash' => password_hash($senha, PASSWORD_DEFAULT),
+        ]);
+    } else {
+        $stmt = $db->prepare('
+            UPDATE usuarios
+            SET nome = :nome, email = :email, perfil = :perfil
+            WHERE id = :id
+        ');
+
+        $stmt->execute([
+            'id' => $id,
+            'nome' => $nome,
+            'email' => $email,
+            'perfil' => $perfil,
+        ]);
+    }
+
+    echo json_encode(['sucesso' => true, 'mensagem' => 'Usuário atualizado com sucesso.']);
+}
+
+function excluirUsuarioAdmin(PDO $db, array $dados): void
+{
+    $adminId = (int) ($dados['admin_id'] ?? 0);
+    $id = (int) ($dados['id'] ?? 0);
+
+    if (!validarAdministrador($db, $adminId)) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Acesso negado. Apenas administradores podem excluir usuários.']);
+        return;
+    }
+
+    $stmtUsuario = $db->prepare("SELECT id FROM usuarios WHERE id = :id AND perfil IN ('gestor', 'colaborador')");
+    $stmtUsuario->execute(['id' => $id]);
+
+    if ($id === $adminId) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Administradores não podem excluir seu próprio usuário.']);
+        return;
+    }
+
+    if (!$stmtUsuario->fetch(PDO::FETCH_ASSOC)) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Usuário não encontrado ou protegido contra exclusão.']);
+        return;
+    }
+
+    $db->beginTransaction();
+
+    try {
+        $stmtNotas = $db->prepare('DELETE FROM notas_quiz WHERE usuario_id = :id');
+        $stmtNotas->execute(['id' => $id]);
+
+        $stmtProgresso = $db->prepare('DELETE FROM progresso_quiz WHERE usuario_id = :id');
+        $stmtProgresso->execute(['id' => $id]);
+
+        $stmtUsuario = $db->prepare('DELETE FROM usuarios WHERE id = :id');
+        $stmtUsuario->execute(['id' => $id]);
+
+        $db->commit();
+        echo json_encode(['sucesso' => true, 'mensagem' => 'Usuário excluído com sucesso.']);
+    } catch (Exception $e) {
+        $db->rollBack();
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Erro ao excluir usuário: ' . $e->getMessage()]);
+    }
+}
+
+function alterarSenhaAdmin(PDO $db, array $dados): void
+{
+    $adminId = (int) ($dados['admin_id'] ?? 0);
+    $senhaAtual = $dados['current_password'] ?? '';
+    $novaSenha = $dados['new_password'] ?? '';
+
+    if ($adminId <= 0) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Administrador inválido.']);
+        return;
+    }
+
+    if (!validarAdministrador($db, $adminId)) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Acesso negado. Apenas administradores podem alterar esta senha.']);
+        return;
+    }
+
+    if (!$senhaAtual || strlen($novaSenha) < 6) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Senha atual e nova senha (mínimo 6 caracteres) são obrigatórias.']);
+        return;
+    }
+
+    $stmt = $db->prepare('SELECT senha_hash FROM usuarios WHERE id = :id AND perfil = :perfil');
+    $stmt->execute(['id' => $adminId, 'perfil' => 'admin']);
+    $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$usuario || !password_verify($senhaAtual, $usuario['senha_hash'])) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Senha atual incorreta.']);
+        return;
+    }
+
+    $stmtUpdate = $db->prepare('UPDATE usuarios SET senha_hash = :senha_hash WHERE id = :id');
+    $stmtUpdate->execute([
+        'id' => $adminId,
+        'senha_hash' => password_hash($novaSenha, PASSWORD_DEFAULT),
+    ]);
+
+    echo json_encode(['sucesso' => true, 'mensagem' => 'Senha alterada com sucesso.']);
+}
 function criarUsuario(PDO $db, array $dados): void
 {
     $nome = trim($dados['nome'] ?? '');
@@ -452,8 +771,8 @@ function criarUsuario(PDO $db, array $dados): void
 
         // Insere o novo usuário
         $stmtInsere = $db->prepare('
-            INSERT INTO usuarios (nome, email, perfil, senha)
-            VALUES (:nome, :email, :perfil, :senha)
+            INSERT INTO usuarios (nome, email, perfil, senha_hash)
+            VALUES (:nome, :email, :perfil, :senha_hash)
         ');
 
         $stmtInsere->execute([
@@ -471,4 +790,10 @@ function criarUsuario(PDO $db, array $dados): void
         echo json_encode(['sucesso' => false, 'mensagem' => 'Erro ao criar usuário: ' . $e->getMessage()]);
     }
 }
+
+
+
+
+
+
 

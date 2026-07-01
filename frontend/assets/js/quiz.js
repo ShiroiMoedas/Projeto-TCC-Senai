@@ -57,8 +57,8 @@ document.addEventListener('DOMContentLoaded', iniciarQuiz);
 async function iniciarQuiz() {
     usuario = obterUsuarioLogado();
 
-    if (!usuario) {
-        alert('Faça login para acessar o quiz.');
+    if (!usuario || !['colaborador', 'gestor'].includes(usuario.perfil)) {
+        alert('Faça login como colaborador ou gestor para acessar o quiz.');
         window.location.href = '../index.html';
         return;
     }
@@ -360,7 +360,9 @@ async function sairDoQuiz() {
     if (Object.keys(respostas).length > 0) {
         await salvarProgresso(false);
     }
-    window.location.href = '../index.html';
+    window.location.href = usuario.perfil === 'gestor'
+        ? '../modulo_gestor/opcoes.html'
+        : '../index.html';
 }
 
 /**
