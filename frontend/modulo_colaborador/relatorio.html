@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAPA - Relatório PI</title>
+    <link rel="stylesheet" href="../assets/css/global.css">
+    <link rel="stylesheet" href="../assets/css/relatorio.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body class="report-page">
+    <header class="report-header">
+        <div class="report-header-inner">
+            <div>
+                <p class="report-kicker">Relatório de Perfil Comportamental</p>
+                <h1>Mapa de Competências - Índice Preditivo (PI)</h1>
+                <p class="report-subtitle">Análise comportamental baseada em Dominância, Influência, Paciência e Formalidade.</p>
+            </div>
+            <div class="report-actions">
+                <button type="button" id="btnDownloadRelatorio" class="btn-primary">Baixar PDF</button>
+                <a href="quiz.html" class="btn-outline">Voltar ao quiz</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="report-main">
+        <section class="report-card report-summary" id="relatorioPiCard">
+            <div class="section-heading">
+                <div>
+                    <p class="section-kicker">Visão do colaborador</p>
+                    <h2>Resumo do Perfil PI</h2>
+                </div>
+            </div>
+
+            <div class="profile-summary">
+                <div>
+                    <p class="label">Colaborador</p>
+                    <h3 id="nomeColaborador">Carregando nome...</h3>
+                </div>
+                <div>
+                    <p class="label">Perfil dominante</p>
+                    <h3 id="perfilPi">Análise em andamento</h3>
+                </div>
+            </div>
+
+            <div class="report-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Gráfico de Radar PI</h3>
+                        <p>Os 4 eixos principais do modelo de avaliação.</p>
+                    </div>
+                    <canvas id="graficoRadarPi"></canvas>
+                </div>
+
+                <div class="insights-card">
+                    <div class="insight-block">
+                        <h3>Características observadas</h3>
+                        <p id="textoInterpretacao">Os resultados apontam um perfil em construção, com base nas pontuações recebidas no questionário.</p>
+                    </div>
+
+                    <div class="insight-block">
+                        <h3>Pontos fortes</h3>
+                        <ul id="listaPontosFortes" class="bullet-list"></ul>
+                    </div>
+
+                    <div class="insight-block">
+                        <h3>Pontos a melhorar</h3>
+                        <ul id="listaGaps" class="bullet-list"></ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="../assets/js/relatorio_pi.js"></script>
+</body>
+</html>

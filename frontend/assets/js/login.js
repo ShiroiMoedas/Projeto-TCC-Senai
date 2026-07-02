@@ -11,9 +11,16 @@ document.addEventListener('DOMContentLoaded', () => {
     formLogin.addEventListener('submit', async (event) => {
         event.preventDefault();
 
+        const email = document.getElementById('email').value.trim();
+
+        if (!/^[^\s@]+@parex\.com\.br$/i.test(email)) {
+            alert('Use um e-mail corporativo do domínio @parex.com.br.');
+            return;
+        }
+
         const dadosLogin = {
             perfil: document.getElementById('perfil').value,
-            email: document.getElementById('email').value.trim(),
+            email,
             password: document.getElementById('password').value,
         };
 

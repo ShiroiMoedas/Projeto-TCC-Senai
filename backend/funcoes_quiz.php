@@ -7,6 +7,11 @@
 define('RH_NOTIF_EMAILS', ['rh@parex.com.br']);
 define('EMAIL_REMETENTE', 'no-reply@parex.com.br');
 
+function validarEmailParex(string $email): bool
+{
+    return filter_var($email, FILTER_VALIDATE_EMAIL) && preg_match('/@parex\.com\.br$/i', $email) === 1;
+}
+
 function processarLogin(PDO $db, array $dados): void
 {
     $email = trim($dados['email'] ?? '');
@@ -15,6 +20,11 @@ function processarLogin(PDO $db, array $dados): void
 
     if (!in_array($perfil, ['admin', 'gestor', 'colaborador'], true)) {
         echo json_encode(['sucesso' => false, 'mensagem' => 'Perfil inválido.']);
+        return;
+    }
+
+    if (!validarEmailParex($email)) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Use um e-mail corporativo @parex.com.br.']);
         return;
     }
 
@@ -106,6 +116,7 @@ function salvarQuiz(PDO $db, array $dados): void
 function atualizarEsquemaSQLite(PDO $db): void
 {
     atualizarTabelaUsuariosSQLite($db);
+    criarTabelaResultadosPi($db);
 
     $colunas = [];
     $stmt = $db->query('PRAGMA table_info(notas_quiz)');
@@ -202,6 +213,24 @@ function garantirAdministradorPadrao(PDO $db): void
             perfil TEXT NOT NULL CHECK (perfil IN ('admin', 'gestor', 'colaborador'))
         )
     ");
+}
+
+function criarTabelaResultadosPi(PDO $db): void
+{
+    $db->exec(
+        "
+        CREATE TABLE IF NOT EXISTS resultados_pi (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            usuario_id INTEGER NOT NULL,
+            dominancia REAL NOT NULL,
+            influencia REAL NOT NULL,
+            paciencia REAL NOT NULL,
+            formalidade REAL NOT NULL,
+            data_avaliacao TEXT DEFAULT (datetime('now', 'localtime')),
+            FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+        )
+        "
+    );
 }
 
 function buscarUsuario(PDO $db, int $usuarioId): ?array
@@ -548,8 +577,8 @@ function salvarUsuarioAdmin(PDO $db, array $dados): void
         return;
     }
 
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        echo json_encode(['sucesso' => false, 'mensagem' => 'E-mail inválido.']);
+    if (!validarEmailParex($email)) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Use um e-mail corporativo @parex.com.br.']);
         return;
     }
 
@@ -751,8 +780,8 @@ function criarUsuario(PDO $db, array $dados): void
         return;
     }
 
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        echo json_encode(['sucesso' => false, 'mensagem' => 'E-mail inválido.']);
+    if (!validarEmailParex($email)) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Use um e-mail corporativo @parex.com.br.']);
         return;
     }
 

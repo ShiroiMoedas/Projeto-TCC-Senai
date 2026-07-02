@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAPA - Perfil do Colaborador</title>
+    <link rel="stylesheet" href="../assets/css/global.css">
+    <link rel="stylesheet" href="../assets/css/relatorio.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body class="report-page">
+    <header class="report-header">
+        <div class="report-header-inner">
+            <div>
+                <p class="report-kicker">Banco de Talentos</p>
+                <h1>Painel Consolidado do Colaborador</h1>
+                <p class="report-subtitle">Acesso rápido ao certificado, ao relatório PI e aos arquivos para download.</p>
+            </div>
+            <a href="opcoes.html" class="btn-outline">Voltar ao gestor</a>
+        </div>
+    </header>
+
+    <main class="report-main gestor-panel">
+        <section class="report-card profile-card">
+            <div class="section-heading">
+                <div>
+                    <p class="section-kicker">Dados do colaborador</p>
+                    <h2 id="nomeColaboradorGestor">Nome do colaborador</h2>
+                </div>
+                <span class="status-badge">Aguardando validação</span>
+            </div>
+
+            <div class="profile-summary">
+                <div>
+                    <p class="label">Cargo</p>
+                    <h3>Analista de Operações</h3>
+                </div>
+                <div>
+                    <p class="label">Unidade</p>
+                    <h3>Produção - PAREX</h3>
+                </div>
+            </div>
+
+            <div class="action-row">
+                <button type="button" class="btn-primary action-btn" data-view="certificado">Visualizar Certificado</button>
+                <button type="button" class="btn-secondary action-btn" data-view="relatorio">Visualizar Relatório PI</button>
+                <button type="button" class="btn-outline action-btn" data-download="true">Descarregar PDF</button>
+            </div>
+        </section>
+
+        <section class="report-card preview-card" id="viewCertificado">
+            <div class="section-heading">
+                <div>
+                    <p class="section-kicker">Documento oficial</p>
+                    <h2>Certificado de Conclusão</h2>
+                </div>
+            </div>
+            <div class="certificate-preview">
+                <h3>Certificado emitido com sucesso</h3>
+                <p>Este certificado representa a conclusão do processo de mapeamento de competências do colaborador.</p>
+                <div class="certificate-box">
+                    <p><strong>Colaborador:</strong> <span id="nomeCertificado">Nome do colaborador</span></p>
+                    <p><strong>Data:</strong> 02/07/2026</p>
+                    <p><strong>Validação:</strong> Aprovado pelo gestor de RH</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="report-card preview-card hidden" id="viewRelatorio">
+            <div class="section-heading">
+                <div>
+                    <p class="section-kicker">Documento analítico</p>
+                    <h2>Relatório PI</h2>
+                </div>
+            </div>
+            <div class="report-grid compact-grid">
+                <div class="chart-card">
+                    <canvas id="graficoRadarGestor"></canvas>
+                </div>
+                <div class="insights-card">
+                    <div class="insight-block">
+                        <h3>Pontos fortes</h3>
+                        <ul class="bullet-list">
+                            <li>Boa capacidade de condução e decisão.</li>
+                            <li>Boa comunicação para influência de equipe.</li>
+                        </ul>
+                    </div>
+                    <div class="insight-block">
+                        <h3>Pontos a melhorar</h3>
+                        <ul class="bullet-list">
+                            <li>Maior consistência em processos formais.</li>
+                            <li>Ampliação da tolerância à pressão e ao ritmo de mudança.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="../assets/js/relatorio_pi.js"></script>
+</body>
+</html>

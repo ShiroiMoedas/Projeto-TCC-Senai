@@ -1,0 +1,217 @@
+:root {
+    --primary-color: #002855;
+    --secondary-color: #0056b3;
+    --accent-color: #3b82f6;
+    --text-dark: #1f2937;
+    --text-light: #5b6472;
+    --surface: #ffffff;
+    --surface-soft: #f4f7fb;
+    --border-color: #d8e2ee;
+}
+
+body.report-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f7f9fc 0%, #eef4fb 100%);
+    display: block;
+    color: var(--text-dark);
+}
+
+.report-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: var(--surface);
+    padding: 32px 24px;
+}
+
+.report-header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.report-kicker,
+.section-kicker {
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 0.75rem;
+    font-weight: 700;
+    opacity: 0.8;
+    margin-bottom: 8px;
+}
+
+.report-header h1,
+.section-heading h2 {
+    margin: 0;
+    font-size: clamp(1.35rem, 2vw, 1.8rem);
+}
+
+.report-subtitle {
+    margin-top: 8px;
+    color: rgba(255,255,255,0.82);
+    max-width: 720px;
+}
+
+.report-main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 28px 24px 48px;
+}
+
+.report-card {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 16px 40px rgba(0, 40, 85, 0.08);
+    margin-bottom: 24px;
+}
+
+.section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.profile-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+    gap: 16px;
+    background: var(--surface-soft);
+    border-radius: 16px;
+    padding: 16px 18px;
+    margin-bottom: 22px;
+}
+
+.label {
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--text-light);
+    margin-bottom: 6px;
+}
+
+.report-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 22px;
+    align-items: start;
+}
+
+.chart-card,
+.insights-card {
+    background: var(--surface-soft);
+    border-radius: 16px;
+    padding: 18px;
+}
+
+.chart-header h3,
+.insight-block h3 {
+    margin-bottom: 6px;
+    color: var(--primary-color);
+}
+
+.chart-header p {
+    color: var(--text-light);
+    font-size: 0.95rem;
+}
+
+canvas {
+    width: 100% !important;
+    height: 320px !important;
+}
+
+.bullet-list {
+    padding-left: 18px;
+    color: var(--text-dark);
+    line-height: 1.7;
+}
+
+.insight-block + .insight-block {
+    margin-top: 16px;
+}
+
+.report-actions,
+.action-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-weight: 700;
+    text-decoration: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-primary {
+    background: var(--secondary-color);
+    color: var(--surface);
+}
+
+.btn-secondary {
+    background: var(--accent-color);
+    color: var(--surface);
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--surface);
+    border-color: rgba(255,255,255,0.35);
+}
+
+.btn-primary:hover,
+.btn-secondary:hover,
+.btn-outline:hover {
+    transform: translateY(-1px);
+}
+
+.status-badge {
+    background: #e8f1ff;
+    color: var(--secondary-color);
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.certificate-preview {
+    background: var(--surface-soft);
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.certificate-box {
+    margin-top: 16px;
+    border: 1px dashed var(--border-color);
+    border-radius: 14px;
+    padding: 16px;
+    background: #fdfefe;
+}
+
+.hidden {
+    display: none;
+}
+
+@media (max-width: 900px) {
+    .report-header-inner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .report-grid {
+        grid-template-columns: 1fr;
+    }
+}

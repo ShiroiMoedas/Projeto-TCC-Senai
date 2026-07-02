@@ -11,20 +11,20 @@ const API_URL = '../../backend/index.php';
 
 // Perguntas do quiz (mantenha alinhado com backend/perguntas_quiz.php)
 const PERGUNTAS = [
-    { id: 't1', categoria: 'tecnico', texto: 'Sei interpretar desenhos técnicos e projetos de caldeiraria.' },
-    { id: 't2', categoria: 'tecnico', texto: 'Domino ferramentas de corte, solda ou usinagem conforme minha função.' },
-    { id: 't3', categoria: 'tecnico', texto: 'Consigo identificar falhas em equipamentos e peças metalúrgicas.' },
-    { id: 't4', categoria: 'tecnico', texto: 'Conheço normas de segurança e qualidade aplicadas no chão de fábrica.' },
+    { id: 't1', categoria: 'tecnico', eixo: 'formalidade', texto: 'Sei interpretar desenhos técnicos e projetos de caldeiraria.' },
+    { id: 't2', categoria: 'tecnico', eixo: 'dominancia', texto: 'Domino ferramentas de corte, solda ou usinagem conforme minha função.' },
+    { id: 't3', categoria: 'tecnico', eixo: 'paciencia', texto: 'Consigo identificar falhas em equipamentos e peças metalúrgicas.' },
+    { id: 't4', categoria: 'tecnico', eixo: 'formalidade', texto: 'Conheço normas de segurança e qualidade aplicadas no chão de fábrica.' },
 
-    { id: 'c1', categoria: 'comportamento', texto: 'Trabalho bem em equipe mesmo quando o prazo está apertado.' },
-    { id: 'c2', categoria: 'comportamento', texto: 'Comunico problemas e dificuldades de forma clara com colegas e supervisores.' },
-    { id: 'c3', categoria: 'comportamento', texto: 'Respeito horários, procedimentos e orientações da liderança.' },
-    { id: 'c4', categoria: 'comportamento', texto: 'Aceito feedback e busco melhorar meu desempenho continuamente.' },
+    { id: 'c1', categoria: 'comportamento', eixo: 'influencia', texto: 'Trabalho bem em equipe mesmo quando o prazo está apertado.' },
+    { id: 'c2', categoria: 'comportamento', eixo: 'influencia', texto: 'Comunico problemas e dificuldades de forma clara com colegas e supervisores.' },
+    { id: 'c3', categoria: 'comportamento', eixo: 'formalidade', texto: 'Respeito horários, procedimentos e orientações da liderança.' },
+    { id: 'c4', categoria: 'comportamento', eixo: 'paciencia', texto: 'Aceito feedback e busco melhorar meu desempenho continuamente.' },
 
-    { id: 'l1', categoria: 'lideranca', texto: 'Assumo responsabilidade quando algo dá errado no meu setor.' },
-    { id: 'l2', categoria: 'lideranca', texto: 'Ajudo colegas novos a entender o trabalho e os processos.' },
-    { id: 'l3', categoria: 'lideranca', texto: 'Proponho melhorias quando identifico oportunidades no processo.' },
-    { id: 'l4', categoria: 'lideranca', texto: 'Consigo organizar tarefas da equipe quando sou solicitado.' },
+    { id: 'l1', categoria: 'lideranca', eixo: 'dominancia', texto: 'Assumo responsabilidade quando algo dá errado no meu setor.' },
+    { id: 'l2', categoria: 'lideranca', eixo: 'influencia', texto: 'Ajudo colegas novos a entender o trabalho e os processos.' },
+    { id: 'l3', categoria: 'lideranca', eixo: 'dominancia', texto: 'Proponho melhorias quando identifico oportunidades no processo.' },
+    { id: 'l4', categoria: 'lideranca', eixo: 'paciencia', texto: 'Consigo organizar tarefas da equipe quando sou solicitado.' },
 ];
 
 const LABELS_CATEGORIA = {
@@ -47,6 +47,7 @@ let indiceAtual = 0;          // índice da pergunta atual exibida
 let respostas = {};           // respostas dadas pelo usuário
 let salvando = false;         // flag para evitar salvamentos concorrentes
 let notasAtuais = null;       // resultado final usado para download de certificado
+let resultadoPiAtual = null;  // resultado do Predictive Index calculado para o relatório
 
 document.addEventListener('DOMContentLoaded', iniciarQuiz);
 
@@ -310,7 +311,17 @@ async function finalizarQuiz() {
             return;
         }
 
-        localStorage.removeItem(chaveBackup());
+        const resultadoPi = calcularResultadoPi(respostas);
+        persistirResultadoPi(resultadoPi);
+
+        const respostaPersistencia = await salvarResultadoPiBackend(resultadoPi);
+        if (respostaPersistencia.sucesso) {
+            localStorage.removeItem(chaveBackup());
+            window.location.href = '../modulo_colaborador/relatorio.html';
+            return;
+        }
+
+        mostrarToast(respostaPersistencia.mensagem || 'Relatório salvo localmente, mas não foi possível gravar no banco.');
         mostrarTelaConcluida(resultado.notas, resultado.mensagem);
     } catch (erro) {
         console.error(erro);
@@ -319,8 +330,65 @@ async function finalizarQuiz() {
     }
 }
 
+function calcularResultadoPi(respostasUsuario) {
+    const eixos = {
+        dominancia: [],
+        influencia: [],
+        paciencia: [],
+        formalidade: [],
+    };
+
+    PERGUNTAS.forEach((pergunta) => {
+        const valor = Number(respostasUsuario[pergunta.id]);
+        if (Number.isFinite(valor) && valor >= 1 && valor <= 5 && eixos[pergunta.eixo]) {
+            eixos[pergunta.eixo].push(valor);
+        }
+    });
+
+    const resultado = {};
+    Object.entries(eixos).forEach(([eixo, valores]) => {
+        const media = valores.length > 0
+            ? valores.reduce((soma, valor) => soma + valor, 0) / valores.length
+            : 0;
+        resultado[eixo] = Math.round((media / 5) * 100);
+    });
+
+    const eixoPrincipal = Object.entries(resultado).sort((a, b) => b[1] - a[1])[0]?.[0] || 'dominancia';
+    resultado.perfil_principal = eixoPrincipal;
+    resultado.eixo_principal_label = traduzirEixoPi(eixoPrincipal);
+
+    return resultado;
+}
+
+function traduzirEixoPi(eixo) {
+    const mapa = {
+        dominancia: 'Dominância',
+        influencia: 'Influência',
+        paciencia: 'Paciência',
+        formalidade: 'Formalidade',
+    };
+
+    return mapa[eixo] || eixo;
+}
+
+function persistirResultadoPi(resultado) {
+    resultadoPiAtual = {
+        ...resultado,
+        nome: usuario?.nome || 'Colaborador',
+        usuario_id: usuario?.id || null,
+        timestamp: new Date().toISOString(),
+    };
+
+    sessionStorage.setItem('mapa_resultado_pi', JSON.stringify(resultadoPiAtual));
+    localStorage.setItem('mapa_resultado_pi', JSON.stringify(resultadoPiAtual));
+    return resultadoPiAtual;
+}
+
 function mostrarTelaConcluida(notas, mensagem) {
     notasAtuais = notas;
+    const resultadoPi = calcularResultadoPi(respostas);
+    persistirResultadoPi(resultadoPi);
+
     document.getElementById('areaQuiz').classList.add('hidden');
     document.getElementById('areaConcluido').classList.remove('hidden');
     document.getElementById('mensagemConcluido').textContent = mensagem;
@@ -368,6 +436,19 @@ async function sairDoQuiz() {
 /**
  * Envia requisições ao backend para salvar, carregar ou finalizar o quiz.
  */
+async function salvarResultadoPiBackend(resultadoPi) {
+    const response = await fetch('../../api/salvar_resultado.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            usuario_id: usuario?.id || null,
+            resultado_pi: resultadoPi,
+        }),
+    });
+
+    return response.json();
+}
+
 async function enviarParaServidor(acao, dadosExtras = {}) {
     const response = await fetch(API_URL, {
         method: 'POST',

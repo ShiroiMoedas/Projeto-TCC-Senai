@@ -132,11 +132,18 @@ async function salvarUsuario(event) {
     const id = document.getElementById('usuarioId').value;
     const senha = document.getElementById('senha').value;
 
+    const email = document.getElementById('email').value.trim();
+
+    if (!/^[^\s@]+@parex\.com\.br$/i.test(email)) {
+        mostrarToast('Use um e-mail corporativo do domínio @parex.com.br.');
+        return;
+    }
+
     const dados = {
         admin_id: adminLogado.id,
         id: id ? Number(id) : null,
         nome: document.getElementById('nome').value.trim(),
-        email: document.getElementById('email').value.trim(),
+        email,
         perfil: document.getElementById('perfil').value,
         password: senha,
     };
